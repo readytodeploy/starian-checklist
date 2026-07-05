@@ -1,21 +1,19 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { HttpClientModule, HttpRequest, provideHttpClient } from '@angular/common/http';
+import { HttpRequest, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 
 import { AppComponent } from './app.component';
 
 /**
- * Rede de seguranca do fluxo da Todo (Fase 7 — test-first).
+ * Rede de seguranca do fluxo da Todo.
  *
  * Grupo A (regressao): fixa o happy path que NAO deve mudar. Interage pelo
- * DOM/HTTP (agnostico a implementacao), entao deve sobreviver a extracao de
- * servico e componentes (Fases 8–9). A URL e o envelope do payload sao ajustados
- * quando o contrato /api + { data } entrar (Fase 8); as asseracoes de comportamento
- * (DOM/metodo HTTP) ficam.
+ * DOM/HTTP (agnostico a implementacao), entao sobrevive a extracao de componentes
+ * (Fase 9). Desde a Fase 8 o contrato e /api/tarefas com envelope { data }.
  *
- * Grupo B (alvo): comportamentos que o codigo legado ainda NAO cumpre (bugs do
- * fallback fake e da URL sem /api). Ficam `pending()` ate a fase que os corrige.
+ * Grupo B (alvo): comportamentos de erro que o codigo legado ainda NAO cumpre
+ * (fallback fake e mutacao otimista). Ficam `pending()` ate a Fase 9.
  */
 describe('AppComponent — rede de seguranca do fluxo', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -38,9 +36,6 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
       imports: [AppComponent],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     });
-    // O componente legado importa HttpClientModule (backend real); removê-lo deixa o
-    // HttpTestingController interceptar. Isso some ao migrar para provideHttpClient (Fase 8).
-    TestBed.overrideComponent(AppComponent, { remove: { imports: [HttpClientModule] } });
 
     fixture = TestBed.createComponent(AppComponent);
     httpMock = TestBed.inject(HttpTestingController);
@@ -48,26 +43,35 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
 
   afterEach(() => httpMock.verify());
 
-  // ---------- Grupo A: regressao (verde agora) ----------
+  // ---------- Grupo A: regressao (verde) ----------
 
   it('lista e exibe as tarefas ao iniciar', () => {
     fixture.detectChanges(); // dispara a carga
 
     const req = httpMock.expectOne(isTarefas);
     expect(req.request.method).toBe('GET');
-    req.flush([
-      { id: 1, title: 'Comprar pão', completed: false },
-      { id: 2, title: 'Estudar Angular', completed: true },
-    ]);
+    req.flush({
+      data: [
+        { id: 1, title: 'Comprar pão', completed: false },
+        { id: 2, title: 'Estudar Angular', completed: true },
+      ],
+    });
     fixture.detectChanges();
 
     expect(el().textContent).toContain('Comprar pão');
     expect(el().textContent).toContain('Estudar Angular');
   });
 
+  it('o contrato usa o prefixo /api', () => {
+    fixture.detectChanges();
+    const req = httpMock.expectOne(isTarefas);
+    expect(req.request.url).toMatch(/\/api\/tarefas/);
+    req.flush({ data: [] });
+  });
+
   it('exibe estado vazio quando não há tarefas', () => {
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([]);
+    httpMock.expectOne(isTarefas).flush({ data: [] });
     fixture.detectChanges();
 
     expect(el().textContent).toContain('Nenhuma tarefa');
@@ -75,14 +79,14 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
 
   it('cria uma tarefa e a exibe', () => {
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([]); // GET inicial vazio
+    httpMock.expectOne(isTarefas).flush({ data: [] }); // GET inicial vazio
 
     type('Estudar Angular');
     button('Adicionar').click();
 
     const post = httpMock.expectOne((r) => r.method === 'POST');
     expect(post.request.body).toEqual({ title: 'Estudar Angular' });
-    post.flush({ id: 2, title: 'Estudar Angular', completed: false });
+    post.flush({ data: { id: 2, title: 'Estudar Angular', completed: false } });
     fixture.detectChanges();
 
     expect(el().textContent).toContain('Estudar Angular');
@@ -90,7 +94,7 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
 
   it('não cria tarefa com título vazio ou só espaços', () => {
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([]);
+    httpMock.expectOne(isTarefas).flush({ data: [] });
 
     type('    ');
     button('Adicionar').click();
@@ -100,7 +104,7 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
 
   it('remove uma tarefa chamando DELETE com o id', () => {
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([{ id: 7, title: 'Temporária', completed: false }]);
+    httpMock.expectOne(isTarefas).flush({ data: [{ id: 7, title: 'Temporária', completed: false }] });
     fixture.detectChanges();
 
     button('Remover').click();
@@ -113,14 +117,7 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
     expect(el().textContent).not.toContain('Temporária');
   });
 
-  // ---------- Grupo B: comportamento-alvo (habilitar na fase indicada) ----------
-
-  it('o contrato usa o prefixo /api', () => {
-    pending('Alvo: environment.apiUrl -> /api/tarefas (Fase 8).');
-
-    fixture.detectChanges();
-    expect(httpMock.expectOne(isTarefas).request.url).toMatch(/\/api\/tarefas/);
-  });
+  // ---------- Grupo B: comportamento-alvo (habilitar na Fase 9) ----------
 
   it('erro ao listar mostra mensagem e NAO dados fake', () => {
     pending('Alvo: remover o fallback fake e exibir erro na UI (Fase 9).');
@@ -136,25 +133,25 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
     pending('Alvo: no POST com erro, mostrar erro em vez de inventar tarefa (Fase 9).');
 
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([]);
+    httpMock.expectOne(isTarefas).flush({ data: [] });
     type('Nova');
     button('Adicionar').click();
     httpMock.expectOne((r) => r.method === 'POST').error(new ProgressEvent('error'));
     fixture.detectChanges();
 
-    expect(el().textContent).not.toContain('Nova'); // não deve ter sido adicionada
+    expect(el().textContent).not.toContain('Nova');
   });
 
   it('erro ao remover MANTÉM a tarefa (consistente com o servidor)', () => {
     pending('Alvo: no DELETE com erro, não remover localmente (Fase 9).');
 
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush([{ id: 1, title: 'Fica', completed: false }]);
+    httpMock.expectOne(isTarefas).flush({ data: [{ id: 1, title: 'Fica', completed: false }] });
     fixture.detectChanges();
     button('Remover').click();
     httpMock.expectOne((r) => r.method === 'DELETE').error(new ProgressEvent('error'));
     fixture.detectChanges();
 
-    expect(el().textContent).toContain('Fica'); // deve permanecer
+    expect(el().textContent).toContain('Fica');
   });
 });
