@@ -38,7 +38,7 @@ class TaskController extends Controller
     public function index(): AnonymousResourceCollection
     {
         // Ordena por id desc (mais recente primeiro). Determinístico mesmo quando
-        // varias tarefas tem o mesmo created_at (ex.: seed criado no mesmo instante).
+        // várias tarefas têm o mesmo created_at (ex.: seed criado no mesmo instante).
         return TaskResource::collection(Task::orderByDesc('id')->get());
     }
 

@@ -1,7 +1,7 @@
 # Orquestração Docker — Infra
 
-> Fazer com que `docker compose up --build` suba backend (Laravel) + frontend (Angular) funcionando, sem passos manuais. · Estado: em progresso (Fase 6) · Fecha: 2026-07-05 · Autor: Pedro Vargas
-> Referencias: spec/backend/tarefas-api.md · issue #—
+> Fazer com que `docker compose up --build` suba backend (Laravel) + frontend (Angular) funcionando, sem passos manuais. · Estado: em progresso (Fase 6) · Data: 2026-07-05 · Autor: Pedro Vargas
+> Referências: spec/backend/tarefas-api.md · issue #—
 
 ## 0. Estado e avanço
 
@@ -11,8 +11,8 @@
 
 ---
 
-## 1. Contexto y objetivo
-<!-- Qué problema resolvemos, para quién, por qué ahora. -->
+## 1. Contexto e objetivo
+<!-- Que problema resolvemos, para quem, por que agora. -->
 O repositório traz um `docker-compose.yml` e dois `Dockerfile` (backend e frontend), mas o stack **não sobe corretamente**: os caminhos de trabalho estão inconsistentes, falta a extensão PHP para SQLite e o backend não é inicializado (sem `APP_KEY`/banco). Hoje o caminho confiável é o arranque manual (ver READMEs).
 
 O objetivo desta fase é deixar `docker compose up --build` como um comando único e funcional: sobe a API do backend em `:8000` (com Swagger) e o dev server do frontend em `:4200`, sem intervenção manual.
@@ -29,7 +29,7 @@ O objetivo desta fase é deixar `docker compose up --build` como um comando úni
 
 ---
 
-## 2. Dominio y lenguaje ubicuo
+## 2. Domínio e linguagem ubíqua
 <!-- Entidades y términos. -->
 - **Serviço `backend`:** container PHP/Laravel que serve a API (`php artisan serve`).
 - **Serviço `frontend`:** container Node/Angular que serve o dev server (`ng serve`).
@@ -39,7 +39,7 @@ O objetivo desta fase é deixar `docker compose up --build` como um comando úni
 
 ---
 
-## 3. Reglas de negocio
+## 3. Regras de negócio
 <!-- Afirmaciones verificables. -->
 - RI1: `docker compose up --build` sobe **ambos** os serviços sem passos manuais.
 - RI2: por serviço, o destino do volume, o `working_dir` do compose e o `WORKDIR` do Dockerfile são **o mesmo caminho** (backend: `/var/www`; frontend: `/app`).
@@ -54,14 +54,14 @@ O objetivo desta fase é deixar `docker compose up --build` como um comando úni
 
 ---
 
-## 4. Entradas / Salidas / Errores
+## 4. Entradas / Saídas / Erros
 - **Entradas:**
   - `docker compose up --build` — sobe o stack **com seed** (padrão).
   - `APP_SEED=false docker compose up` — forma **opcional**, sobe **sem** semear.
-- **Salidas:**
+- **Saídas:**
   - Dois containers em execução (backend, frontend).
   - `GET /up` → `200`; `GET /api/tarefas` → `200`; `/api/documentation` → `200`; `:4200` → `200`.
-- **Errores a eliminar:**
+- **Erros a eliminar:**
   - Container do backend falha/reinicia por `working_dir` inexistente.
   - `could not find driver` (SQLite) por falta de `pdo_sqlite`.
   - `No application encryption key` por falta de `APP_KEY`.
@@ -122,41 +122,41 @@ exec "$@"                                     # 6. entrega o CMD como PID 1 (art
 
 ---
 
-## 7. Escenarios (BDD)
+## 7. Cenários (BDD)
 ```
-Escenario: Subir o stack completo
+Cenário: Subir o stack completo
   Given o repositório clonado
   When  ejecuto `docker compose up --build`
   Then  os serviços backend e frontend ficam "up"
   And   nenhum container entra em restart-loop
 
-Escenario: API disponível
+Cenário: API disponível
   Given o stack rodando
   When  GET http://localhost:8000/api/tarefas
   Then  status 200 e corpo JSON { data: [...] }
 
-Escenario: Swagger disponível
+Cenário: Swagger disponível
   Given o stack rodando
   When  GET http://localhost:8000/api/documentation
   Then  status 200
 
-Escenario: Frontend disponível
+Cenário: Frontend disponível
   Given o stack rodando
   When  GET http://localhost:4200
   Then  status 200
 
-Escenario: Seed por padrão
+Cenário: Seed por padrão
   Given nenhuma variável APP_SEED definida
   When  `docker compose up --build`
   Then  o banco contém as 3 tarefas iniciais (TaskSeeder)
 
-Escenario: Subir sem seed (opcional)
+Cenário: Subir sem seed (opcional)
   Given APP_SEED=false
   When  `APP_SEED=false docker compose up`
   Then  as migrations rodam
   And   o banco NÃO é semeado (0 tarefas)
 
-Escenario: Reinício idempotente
+Cenário: Reinício idempotente
   Given o stack já subiu uma vez (com seed)
   When  reinicio o container
   Then  não há erro de migration nem tarefas duplicadas
@@ -164,7 +164,7 @@ Escenario: Reinício idempotente
 
 ---
 
-## 8. Ejemplos
+## 8. Exemplos
 | entrada | resultado esperado |
 |---------|--------------------|
 | `docker compose up --build` | backend + frontend "up" e **semeado** (3 tarefas), sem passos manuais |
@@ -175,13 +175,13 @@ Escenario: Reinício idempotente
 
 ---
 
-## 9. Eventos            <!-- si aplica -->
-No aplica.
+## 9. Eventos            <!-- se aplicável -->
+Não se aplica.
 
-## 10. Modelo de estados  <!-- si aplica -->
-No aplica (ciclo de vida padrão de containers).
+## 10. Modelo de estados  <!-- se aplicável -->
+Não se aplica (ciclo de vida padrão de containers).
 
-## 11. Decisiones (ADR)
+## 11. Decisões (ADR)
 - ADR-I1: padronizar o diretório do backend em **`/var/www`** (volume, `working_dir` e `WORKDIR`).
 - ADR-I2: padronizar o diretório do frontend em **`/app`** (volume, `working_dir` e `WORKDIR`).
 - ADR-I3: adicionar **`pdo_sqlite`** às extensões do `backend/Dockerfile` (e manter/retirar `pdo_mysql` conforme uso).
@@ -196,7 +196,7 @@ No aplica (ciclo de vida padrão de containers).
 
 ---
 
-## 12. Criterios de aceptación
+## 12. Critérios de aceitação
 - [ ] `docker compose up --build` sobe backend + frontend sem passos manuais (RI1) — verificação: `docker compose ps`
 - [ ] Caminhos consistentes por serviço (RI2, II1) — verificação: revisão de `docker-compose.yml` + Dockerfiles
 - [ ] `GET /up` e `GET /api/tarefas` → `200` (RI3, RI5, RI6) — verificação: `curl`
@@ -211,8 +211,8 @@ No aplica (ciclo de vida padrão de containers).
 
 ---
 
-## 13. Trazabilidad
-| Regla / Escenario | Verificación | Archivo |
+## 13. Rastreabilidade
+| Regra / Cenário | Verificação | Arquivo |
 |-------------------|--------------|---------|
 | RI2, II1 / caminhos consistentes | revisão | `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile` |
 | RI5 / driver SQLite | `curl /api/tarefas` | `backend/Dockerfile` |

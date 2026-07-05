@@ -1,7 +1,7 @@
 # Tarefas API — Backend
 
-> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 5) · Fecha: 2026-07-05 · Autor: Pedro Vargas
-> Referencias: spec/adr/ADR-0001-sqlite · issue #—
+> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 5) · Data: 2026-07-05 · Autor: Pedro Vargas
+> Referências: spec/adr/ADR-0001-sqlite · issue #—
 
 ## 0. Estado e avanço das fases
 <!-- Controle de avanço do refactor. Atualizar a cada fase. -->
@@ -17,14 +17,14 @@ Legenda: ✅ concluída · 🚧 em andamento · ⏳ pendente
 
 > Os critérios de aceitação (§12) só são plenamente satisfeitos após a Fase 3 (cutover). Nas Fases 1–2 os testes do Grupo A rodam contra o código legado (JSON) e o Grupo B fica *skipped*.
 
-## 1. Contexto y objetivo
-<!-- Qué problema resolvemos, para quién, por qué ahora. 1–2 párrafos. -->
+## 1. Contexto e objetivo
+<!-- Que problema resolvemos, para quem, por que agora. 1–2 parágrafos. -->
 A API de tarefas atual persiste em um arquivo `storage/tarefas.json` e implementa toda a lógica como closures no arquivo de rotas, com funções globais (`lerTarefas`/`salvarTarefas`), sem validação, sem tratamento de erros e sem camada de domínio. Isso a torna frágil, insegura (CORS `*`) e impossível de testar em processo (redeclaração de função).
 
 O objetivo é refatorar para uma API REST idiomática do Laravel — `TaskController` + `FormRequest` + `API Resource` + persistência via Eloquent — **sem alterar o comportamento funcional** do CRUD (listar, criar, remover), e corrigindo os defeitos de contorno (validação, 404, CORS restrito). O consumidor é o frontend Angular da Todo List.
 
-## 2. Dominio y lenguaje ubicuo
-<!-- Entidades y términos con su definición. Mapea a src/core/domain/<dominio>. -->
+## 2. Domínio e linguagem ubíqua
+<!-- Entidades e termos com sua definição. Mapeia para src/core/domain/<dominio>. -->
 - **Task (Tarefa):** item da lista de afazeres. Mapeia para `App\Models\Task` (tabela `tasks`).
   - `id` (int): identificador único, gerado pelo banco.
   - `title` (string): descrição da tarefa. Obrigatório.
@@ -34,8 +34,8 @@ O objetivo é refatorar para uma API REST idiomática do Laravel — `TaskContro
 
 > Nota: o endpoint é exposto em português (`/api/tarefas`) por compatibilidade com o frontend; o código (model, controller) é em inglês (`Task`).
 
-## 3. Reglas de negocio
-<!-- Lista numerada de afirmaciones verificables. -->
+## 3. Regras de negócio
+<!-- Lista numerada de afirmações verificáveis. -->
 - R1: `title` é obrigatório, do tipo string, com no máximo 255 caracteres.
 - R2: uma tarefa recém-criada nasce com `completed = false`.
 - R3: a listagem retorna as tarefas da mais recente para a mais antiga, ordenadas por **`id desc`** (determinístico mesmo com `created_at` empatado).
@@ -44,16 +44,16 @@ O objetivo é refatorar para uma API REST idiomática do Laravel — `TaskContro
 - R6: a persistência é feita em banco de dados via Eloquent — nunca em arquivo.
 - R7: a resposta segue o envelope de API Resource: objeto sob a chave `data`.
 
-## 4. Entradas / Salidas / Errores
+## 4. Entradas / Saídas / Erros
 - **Entradas:**
   - `GET /api/tarefas` — sem corpo.
   - `POST /api/tarefas` — JSON `{ "title": string }`.
   - `DELETE /api/tarefas/{task}` — `task` = id no path.
-- **Salidas:**
+- **Saídas:**
   - `GET` → `200` `{ "data": Task[] }`.
   - `POST` → `201` `{ "data": Task }`.
   - `DELETE` → `204` sem corpo.
-- **Errores:**
+- **Erros:**
   - `422 Unprocessable Entity` — validação falhou (ex.: `title` ausente), com `{ message, errors }`.
   - `404 Not Found` — tarefa inexistente no `DELETE`.
 
@@ -81,45 +81,45 @@ interface Task {
 ```
 
 ## 6. Invariantes
-<!-- Reglas SIEMPRE verdaderas → tests de invariante. -->
+<!-- Regras SEMPRE verdadeiras → testes de invariante. -->
 - I1: `completed` é sempre booleano (nunca `null`) em uma tarefa persistida ou serializada.
 - I2: `title` de uma tarefa persistida nunca é vazio.
 - I3: `id` é único entre as tarefas.
 
-## 7. Escenarios (BDD)
+## 7. Cenários (BDD)
 ```
-Escenario: Listar tarefas existentes
+Cenário: Listar tarefas existentes
   Given existe uma tarefa "Existing task"
   When  GET /api/tarefas
   Then  status 200
   And   o corpo contém "Existing task"
 
-Escenario: Criar tarefa válida
+Cenário: Criar tarefa válida
   Given nenhuma restrição
   When  POST /api/tarefas com { title: "Buy bread" }
   Then  status 201
   And   o corpo contém { title: "Buy bread", completed: false }
   And   a tarefa fica persistida no banco
 
-Escenario: Criar tarefa sem título
+Cenário: Criar tarefa sem título
   Given nenhuma restrição
   When  POST /api/tarefas com {}
   Then  status 422
   And   errors.title está presente
 
-Escenario: Remover tarefa existente
+Cenário: Remover tarefa existente
   Given existe uma tarefa com id X
   When  DELETE /api/tarefas/X
   Then  status 204
   And   a tarefa com id X não existe mais
 
-Escenario: Remover tarefa inexistente
+Cenário: Remover tarefa inexistente
   Given não existe tarefa com id 999999
   When  DELETE /api/tarefas/999999
   Then  status 404
 ```
 
-## 8. Ejemplos
+## 8. Exemplos
 | entrada | resultado esperado |
 |---------|--------------------|
 | `POST { "title": "Buy bread" }` | `201` `{ "data": { "id": 1, "title": "Buy bread", "completed": false } }` |
@@ -128,16 +128,16 @@ Escenario: Remover tarefa inexistente
 | `DELETE /api/tarefas/1` (existe) | `204` sem corpo |
 | `DELETE /api/tarefas/999999` (não existe) | `404` |
 
-## 9. Eventos            <!-- si aplica -->
-No aplica — a API é CRUD stateless, sem event sourcing nem eventos de domínio publicados.
+## 9. Eventos            <!-- se aplicável -->
+Não se aplica — a API é CRUD stateless, sem event sourcing nem eventos de domínio publicados.
 
-## 10. Modelo de estados  <!-- si aplica -->
+## 10. Modelo de estados  <!-- se aplicável -->
 ```
 (inexistente) --POST--> [completed=false] --DELETE--> (inexistente)
 ```
 Transição `completed=false → completed=true` (marcar concluída) **fora do escopo** desta iteração: o recurso expõe apenas `index`, `store` e `destroy` (sem `update`).
 
-## 11. Decisiones (ADR)   <!-- si aplica -->
+## 11. Decisões (ADR)   <!-- se aplicável -->
 - ADR-0001: usar **SQLite** como banco (zero setup para o teste técnico).
 - ADR-0002: prefixar rotas com **`/api`** e movê-las para `routes/api.php` (habilitado em `bootstrap/app.php`).
 - ADR-0003: padronizar respostas com **`TaskResource`** (envelope `data`).
@@ -146,7 +146,7 @@ Transição `completed=false → completed=true` (marcar concluída) **fora do e
 - ADR-0006: **documentação OpenAPI** via `darkaonline/l5-swagger` com atributos PHP 8 (`OpenApi\Attributes`) no controller/resource. Swagger UI em `/api/documentation`, JSON em `/docs`. `L5_SWAGGER_GENERATE_ALWAYS=true` regenera sob demanda; o JSON gerado (`storage/api-docs`) é gitignored (não versionado).
 - ADR-0007: **pin de `l5-swagger` em `~10.0.0`** (swagger-php 5) para manter compatibilidade com **PHP 8.2/8.3**. As versões `10.1+`/`11.x` usam swagger-php 6 → `symfony/type-info` → exige PHP ≥ 8.4.1. Reavaliar se o runtime subir para 8.4+.
 
-## 12. Criterios de aceptación
+## 12. Critérios de aceitação
 - [x] Listar retorna 200 com as tarefas (R3, R7) — test: `test_list_returns_200_with_tasks`
 - [x] Criar tarefa válida retorna 201 e persiste (R2, R4, R6, R7) — test: `test_create_persists_task`
 - [x] Criar sem título retorna 422 (R1) — test: `test_create_without_title_returns_422`
@@ -155,8 +155,8 @@ Transição `completed=false → completed=true` (marcar concluída) **fora do e
 - [x] CORS restrito a localhost:4200 (ADR-0004) — verificação: header `Access-Control-Allow-Origin`
 - [x] API documentada em OpenAPI/Swagger (ADR-0006) — verificação: `/api/documentation` (200) e `/docs` (JSON)
 
-## 13. Trazabilidad
-| Regla / Escenario | Test | Archivo de código |
+## 13. Rastreabilidade
+| Regra / Cenário | Teste | Arquivo de código |
 |-------------------|------|-------------------|
 | R1 / Criar sem título | `test_create_without_title_returns_422` | `app/Http/Requests/StoreTaskRequest.php` |
 | R2, R4, R6 / Criar válida | `test_create_persists_task` | `app/Http/Controllers/TaskController.php@store`, `app/Models/Task.php` |
