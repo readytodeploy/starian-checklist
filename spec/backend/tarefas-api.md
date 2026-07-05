@@ -38,7 +38,7 @@ O objetivo é refatorar para uma API REST idiomática do Laravel — `TaskContro
 <!-- Lista numerada de afirmaciones verificables. -->
 - R1: `title` é obrigatório, do tipo string, com no máximo 255 caracteres.
 - R2: uma tarefa recém-criada nasce com `completed = false`.
-- R3: a listagem retorna as tarefas ordenadas da mais recente para a mais antiga (`created_at desc`).
+- R3: a listagem retorna as tarefas da mais recente para a mais antiga, ordenadas por **`id desc`** (determinístico mesmo com `created_at` empatado).
 - R4: o `id` é gerado pelo banco (autoincremental); o cliente não o informa na criação.
 - R5: remover uma tarefa inexistente resulta em `404` (não em `204`).
 - R6: a persistência é feita em banco de dados via Eloquent — nunca em arquivo.

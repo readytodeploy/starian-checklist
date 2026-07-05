@@ -47,6 +47,18 @@ class TarefasApiTest extends TestCase
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
 
+    public function test_list_returns_tasks_ordered_by_id_desc(): void
+    {
+        // Criadas no mesmo instante (created_at empatado): a ordem estavel vem do id.
+        $first = Task::factory()->create();
+        $second = Task::factory()->create();
+        $third = Task::factory()->create();
+
+        $ids = array_column($this->getJson($this->url)->json('data'), 'id');
+
+        $this->assertSame([$third->id, $second->id, $first->id], $ids);
+    }
+
     // ---------- Grupo B: comportamento-alvo (melhorias do refactor) ----------
 
     public function test_create_without_title_returns_422(): void
