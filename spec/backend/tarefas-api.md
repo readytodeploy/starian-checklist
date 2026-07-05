@@ -1,6 +1,6 @@
 # Tarefas API — Backend
 
-> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 2) · Fecha: 2026-07-05 · Autor: Pedro Vargas
+> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 3) · Fecha: 2026-07-05 · Autor: Pedro Vargas
 > Referencias: REFACTORING_GUIDE.md · spec/adr/ADR-0001-sqlite · issue #—
 
 ## 0. Estado e avanço das fases
@@ -8,8 +8,8 @@
 | Fase | Escopo | Branch | Status |
 |------|--------|--------|--------|
 | 1 | Rede de segurança: spec + testes de caracterização (test-first) | `backend_fase_1_rede_de_seguranca` | ✅ concluída (mergeada em `development`) |
-| 2 | Persistência: `Task` model + migration + factory (SQLite) | `backend_fase_2_persistencia` | 🚧 em andamento |
-| 3 | Cutover JSON→Eloquent: Controller + FormRequest + Resource + rotas `/api` (habilita 422/404) | — | ⏳ pendente |
+| 2 | Persistência: `Task` model + migration + factory (SQLite) | `backend_fase_2_persistencia` | ✅ concluída (mergeada em `development`) |
+| 3 | Cutover JSON→Eloquent: Controller + FormRequest + Resource + rotas `/api` (422/404) + seed de paridade | `backend_fase_3_controller` | 🚧 em andamento |
 | 4 | CORS nativo restrito a `localhost:4200` | — | ⏳ pendente |
 
 Legenda: ✅ concluída · 🚧 em andamento · ⏳ pendente
@@ -141,14 +141,15 @@ Transição `completed=false → completed=true` (marcar concluída) **fora do e
 - ADR-0002: prefixar rotas com **`/api`** e movê-las para `routes/api.php` (habilitado em `bootstrap/app.php`).
 - ADR-0003: padronizar respostas com **`TaskResource`** (envelope `data`).
 - ADR-0004: **CORS nativo** via `config/cors.php`, restrito a `http://localhost:4200` (remover middleware caseiro).
+- ADR-0005: **seed de paridade** via `TaskSeeder` reproduzindo as 3 tarefas iniciais do antigo `tarefas.json`. Idempotente (`firstOrCreate` por `title`). Executado sob demanda (`php artisan db:seed` / `migrate --seed`), **não** automaticamente nos testes (`RefreshDatabase` não semeia), preservando o determinismo da suíte.
 
 ## 12. Criterios de aceptación
-- [ ] Listar retorna 200 com as tarefas (R3, R7) — test: `test_list_returns_200_with_tasks`
-- [ ] Criar tarefa válida retorna 201 e persiste (R2, R4, R6, R7) — test: `test_create_persists_task`
-- [ ] Criar sem título retorna 422 (R1) — test: `test_create_without_title_returns_422`
-- [ ] Remover tarefa existente retorna 204 e apaga (R6) — test: `test_delete_existing_task_removes_it`
-- [ ] Remover inexistente retorna 404 (R5) — test: `test_delete_missing_task_returns_404`
-- [ ] CORS restrito a localhost:4200 (ADR-0004) — verificação: header `Access-Control-Allow-Origin`
+- [x] Listar retorna 200 com as tarefas (R3, R7) — test: `test_list_returns_200_with_tasks`
+- [x] Criar tarefa válida retorna 201 e persiste (R2, R4, R6, R7) — test: `test_create_persists_task`
+- [x] Criar sem título retorna 422 (R1) — test: `test_create_without_title_returns_422`
+- [x] Remover tarefa existente retorna 204 e apaga (R6) — test: `test_delete_existing_task_removes_it`
+- [x] Remover inexistente retorna 404 (R5) — test: `test_delete_missing_task_returns_404`
+- [ ] CORS restrito a localhost:4200 (ADR-0004) — verificação: header `Access-Control-Allow-Origin` (Fase 4)
 
 ## 13. Trazabilidad
 | Regla / Escenario | Test | Archivo de código |
