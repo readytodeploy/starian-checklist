@@ -47,4 +47,64 @@ describe('TodoFormComponent', () => {
 
     expect(component.title()).toBe('Digitado');
   });
+
+  it('desabilita o botão Adicionar enquanto o título está vazio', () => {
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.value = 'Algo';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(button.disabled).toBe(false);
+  });
+
+  it('mostra mensagem de obrigatório ao tentar enviar vazio', () => {
+    component.submit(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Informe um título');
+  });
+
+  it('não corta o texto: sem atributo maxlength no input', () => {
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.getAttribute('maxlength')).toBeNull();
+  });
+
+  it('avisa e bloqueia o botão quando passa de 255 caracteres', () => {
+    component.title.set('a'.repeat(256));
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('limite');
+  });
+
+  it('não emite quando o título passa de 255 caracteres', () => {
+    const spy = jasmine.createSpy('add');
+    component.add.subscribe(spy);
+
+    component.title.set('a'.repeat(256));
+    component.submit(new Event('submit'));
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('mostra o motivo do bloqueio num tooltip', () => {
+    const tooltip = () => fixture.nativeElement.querySelector('.tooltip') as HTMLElement | null;
+
+    // Vazio: tooltip com o motivo "obrigatório".
+    expect(tooltip()?.textContent).toContain('Informe um título');
+
+    // Acima do limite: tooltip com o motivo de excesso.
+    component.title.set('a'.repeat(256));
+    fixture.detectChanges();
+    expect(tooltip()?.textContent).toContain('passou de 255');
+
+    // Válido: sem tooltip.
+    component.title.set('Comprar pão');
+    fixture.detectChanges();
+    expect(tooltip()).toBeNull();
+  });
 });

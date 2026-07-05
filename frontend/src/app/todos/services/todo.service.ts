@@ -19,7 +19,9 @@ export class TodoService {
   }
 
   add(title: string): Observable<Todo> {
-    return this.http.post<{ data: Todo }>(this.url, { title }).pipe(map((response) => response.data));
+    return this.http
+      .post<{ data: Todo }>(this.url, { title })
+      .pipe(map((response) => response.data));
   }
 
   remove(id: number): Observable<void> {

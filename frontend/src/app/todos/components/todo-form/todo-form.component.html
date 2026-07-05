@@ -1,11 +1,34 @@
 <form class="todo-form" (submit)="submit($event)">
-  <input
-    type="text"
-    name="title"
-    placeholder="Digite uma nova tarefa"
-    aria-label="Nova tarefa"
-    [value]="title()"
-    (input)="title.set($any($event.target).value)"
-  />
-  <button type="submit">Adicionar</button>
+  <div class="field">
+    <input
+      type="text"
+      name="title"
+      placeholder="Digite uma nova tarefa"
+      aria-label="Nova tarefa"
+      autocomplete="off"
+      [value]="title()"
+      (input)="title.set($any($event.target).value)"
+      [attr.aria-invalid]="errorMessage() ? 'true' : null"
+      aria-describedby="todo-title-error"
+    />
+
+    <!-- O span envolve o botão para exibir o tooltip mesmo com o botão desabilitado. -->
+    <span class="button-wrap">
+      <button
+        type="submit"
+        [disabled]="!isValid()"
+        [attr.aria-describedby]="blockReason() ? 'submit-hint' : null"
+      >
+        Adicionar
+      </button>
+
+      @if (blockReason(); as reason) {
+        <span id="submit-hint" class="tooltip" role="tooltip">{{ reason }}</span>
+      }
+    </span>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p id="todo-title-error" class="field-error" role="alert">{{ message }}</p>
+  }
 </form>

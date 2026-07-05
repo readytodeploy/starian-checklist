@@ -26,7 +26,9 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
   const el = () => fixture.nativeElement as HTMLElement;
   const input = () => el().querySelector('input') as HTMLInputElement;
   const button = (text: string) =>
-    Array.from(el().querySelectorAll('button')).find((b) => b.textContent?.includes(text)) as HTMLButtonElement;
+    Array.from(el().querySelectorAll('button')).find((b) =>
+      b.textContent?.includes(text),
+    ) as HTMLButtonElement;
 
   const type = (value: string) => {
     input().value = value;
@@ -111,7 +113,9 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
 
   it('remove uma tarefa chamando DELETE com o id', () => {
     fixture.detectChanges();
-    httpMock.expectOne(isTarefas).flush({ data: [{ id: 7, title: 'Temporária', completed: false }] });
+    httpMock
+      .expectOne(isTarefas)
+      .flush({ data: [{ id: 7, title: 'Temporária', completed: false }] });
     fixture.detectChanges();
 
     button('Remover').click();
