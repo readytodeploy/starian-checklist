@@ -1,7 +1,20 @@
 # Tarefas API — Backend
 
-> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: borrador · Fecha: 2026-07-05 · Autor: Pedro Vargas
+> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 2) · Fecha: 2026-07-05 · Autor: Pedro Vargas
 > Referencias: REFACTORING_GUIDE.md · spec/adr/ADR-0001-sqlite · issue #—
+
+## 0. Estado e avanço das fases
+<!-- Controle de avanço do refactor. Atualizar a cada fase. -->
+| Fase | Escopo | Branch | Status |
+|------|--------|--------|--------|
+| 1 | Rede de segurança: spec + testes de caracterização (test-first) | `backend_fase_1_rede_de_seguranca` | ✅ concluída (mergeada em `development`) |
+| 2 | Persistência: `Task` model + migration + factory (SQLite) | `backend_fase_2_persistencia` | 🚧 em andamento |
+| 3 | Cutover JSON→Eloquent: Controller + FormRequest + Resource + rotas `/api` (habilita 422/404) | — | ⏳ pendente |
+| 4 | CORS nativo restrito a `localhost:4200` | — | ⏳ pendente |
+
+Legenda: ✅ concluída · 🚧 em andamento · ⏳ pendente
+
+> Os critérios de aceitação (§12) só são plenamente satisfeitos após a Fase 3 (cutover). Nas Fases 1–2 os testes do Grupo A rodam contra o código legado (JSON) e o Grupo B fica *skipped*.
 
 ## 1. Contexto y objetivo
 <!-- Qué problema resolvemos, para quién, por qué ahora. 1–2 párrafos. -->
@@ -15,6 +28,7 @@ O objetivo é refatorar para uma API REST idiomática do Laravel — `TaskContro
   - `id` (int): identificador único, gerado pelo banco.
   - `title` (string): descrição da tarefa. Obrigatório.
   - `completed` (bool): se a tarefa foi concluída. Default `false`.
+  - `created_at` / `updated_at` (timestamp): gerados pelo Eloquent; `created_at` define a ordem da listagem (R3).
 - **Coleção de tarefas:** lista de `Task` ordenada da mais recente para a mais antiga.
 
 > Nota: o endpoint é exposto em português (`/api/tarefas`) por compatibilidade com o frontend; o código (model, controller) é em inglês (`Task`).
