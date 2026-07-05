@@ -111,7 +111,8 @@ php artisan serve                   # http://localhost:8000
 
 ### Docker (stack completo)
 
-A partir da **raiz do repositório** sobe backend + frontend:
+A partir da **raiz do repositório** sobe backend + frontend com um comando — o
+entrypoint cuida de `.env`, `APP_KEY`, migrations e seed automaticamente:
 
 ```bash
 docker compose up --build
@@ -119,7 +120,13 @@ docker compose up --build
 
 - Backend: http://localhost:8000 · Frontend: http://localhost:4200 · Swagger: http://localhost:8000/api/documentation
 
-> ⚠️ O `docker-compose.yml` ainda tem ajustes pendentes da fase de infraestrutura (ex.: `working_dir`). Enquanto isso, o arranque **local** acima é o caminho verificado.
+Por padrão o banco é **semeado** (3 tarefas iniciais). Para subir **sem seed**:
+
+```bash
+APP_SEED=false docker compose up
+```
+
+> Detalhes da orquestração (volumes, healthcheck, entrypoint) no [spec de infra](../spec/infra/docker.md).
 
 ---
 

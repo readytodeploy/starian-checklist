@@ -1,25 +1,33 @@
-version: '3.8'
-
 services:
-  laravel:
+  backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+    working_dir: /var/www
     volumes:
       - ./backend:/var/www
+      - backend_vendor:/var/www/vendor       # o bind mount não apaga o vendor da imagem
     ports:
       - "8000:8000"
-    working_dir: /backend
-    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      APP_SEED: ${APP_SEED:-true}            # seed por padrão; APP_SEED=false para pular
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
-  angular:
+  frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+    working_dir: /app
     volumes:
       - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     ports:
       - "4200:4200"
-    command: npm run start -- --host=0.0.0.0
     stdin_open: true
     tty: true
+
+volumes:
+  backend_vendor:
+  frontend_node_modules:

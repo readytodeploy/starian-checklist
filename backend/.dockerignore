@@ -1,0 +1,10 @@
+.git
+.gitignore
+vendor
+node_modules
+.env
+database/*.sqlite
+storage/api-docs/api-docs.json
+storage/logs/*.log
+tests
+README.md
