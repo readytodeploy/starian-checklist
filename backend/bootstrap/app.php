@@ -12,8 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Registrar middleware CORS global (má prática - sem restrições)
-        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
+        //
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

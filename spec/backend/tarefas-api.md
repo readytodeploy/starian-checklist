@@ -1,6 +1,6 @@
 # Tarefas API — Backend
 
-> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 3) · Fecha: 2026-07-05 · Autor: Pedro Vargas
+> Refatorar a API de tarefas de arquivo JSON + closures para Laravel idiomático (Controller + Eloquent + validação), preservando o CRUD. · Estado: em progresso (Fase 4) · Fecha: 2026-07-05 · Autor: Pedro Vargas
 > Referencias: REFACTORING_GUIDE.md · spec/adr/ADR-0001-sqlite · issue #—
 
 ## 0. Estado e avanço das fases
@@ -10,7 +10,7 @@
 | 1 | Rede de segurança: spec + testes de caracterização (test-first) | `backend_fase_1_rede_de_seguranca` | ✅ concluída (mergeada em `development`) |
 | 2 | Persistência: `Task` model + migration + factory (SQLite) | `backend_fase_2_persistencia` | ✅ concluída (mergeada em `development`) |
 | 3 | Cutover JSON→Eloquent: Controller + FormRequest + Resource + rotas `/api` (422/404) + seed de paridade | `backend_fase_3_controller` | 🚧 em andamento |
-| 4 | CORS nativo restrito a `localhost:4200` | — | ⏳ pendente |
+| 4 | CORS nativo restrito a `localhost:4200` + documentação OpenAPI/Swagger (l5-swagger) | `backend_fase_4_cors_swagger` | 🚧 em andamento |
 
 Legenda: ✅ concluída · 🚧 em andamento · ⏳ pendente
 
@@ -142,6 +142,7 @@ Transição `completed=false → completed=true` (marcar concluída) **fora do e
 - ADR-0003: padronizar respostas com **`TaskResource`** (envelope `data`).
 - ADR-0004: **CORS nativo** via `config/cors.php`, restrito a `http://localhost:4200` (remover middleware caseiro).
 - ADR-0005: **seed de paridade** via `TaskSeeder` reproduzindo as 3 tarefas iniciais do antigo `tarefas.json`. Idempotente (`firstOrCreate` por `title`). Executado sob demanda (`php artisan db:seed` / `migrate --seed`), **não** automaticamente nos testes (`RefreshDatabase` não semeia), preservando o determinismo da suíte.
+- ADR-0006: **documentação OpenAPI** via `darkaonline/l5-swagger` com atributos PHP 8 (`OpenApi\Attributes`) no controller/resource. Swagger UI em `/api/documentation`. `L5_SWAGGER_GENERATE_ALWAYS=true` regenera sob demanda; o JSON gerado (`storage/api-docs`) é gitignored (não versionado).
 
 ## 12. Criterios de aceptación
 - [x] Listar retorna 200 com as tarefas (R3, R7) — test: `test_list_returns_200_with_tasks`
@@ -149,7 +150,8 @@ Transição `completed=false → completed=true` (marcar concluída) **fora do e
 - [x] Criar sem título retorna 422 (R1) — test: `test_create_without_title_returns_422`
 - [x] Remover tarefa existente retorna 204 e apaga (R6) — test: `test_delete_existing_task_removes_it`
 - [x] Remover inexistente retorna 404 (R5) — test: `test_delete_missing_task_returns_404`
-- [ ] CORS restrito a localhost:4200 (ADR-0004) — verificação: header `Access-Control-Allow-Origin` (Fase 4)
+- [x] CORS restrito a localhost:4200 (ADR-0004) — verificação: header `Access-Control-Allow-Origin`
+- [x] API documentada em OpenAPI/Swagger (ADR-0006) — verificação: `/api/documentation` (200) e `/docs?api-docs.json`
 
 ## 13. Trazabilidad
 | Regla / Escenario | Test | Archivo de código |
