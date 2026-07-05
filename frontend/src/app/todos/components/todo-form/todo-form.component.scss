@@ -1,0 +1,38 @@
+.todo-form {
+  margin-bottom: 20px;
+
+  input {
+    padding: 8px;
+    width: 300px;
+    max-width: 100%;
+  }
+
+  button {
+    padding: 8px 16px;
+    margin-left: 10px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--primary-hover);
+    }
+  }
+
+  // Responsivo: empilha input e botão em telas pequenas.
+  @media (max-width: 480px) {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    input {
+      width: 100%;
+    }
+
+    button {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}

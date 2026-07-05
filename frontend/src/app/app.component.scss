@@ -1,0 +1,11 @@
+.app {
+  padding: 20px;
+}
+
+.status {
+  color: var(--muted);
+
+  &.error {
+    color: var(--danger);
+  }
+}

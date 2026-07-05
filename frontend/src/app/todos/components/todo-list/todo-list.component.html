@@ -1,0 +1,7 @@
+<ul class="todo-list">
+  @for (todo of todos(); track todo.id) {
+    <app-todo-item [todo]="todo" (remove)="remove.emit($event)" />
+  } @empty {
+    <li class="empty">Nenhuma tarefa encontrada.</li>
+  }
+</ul>

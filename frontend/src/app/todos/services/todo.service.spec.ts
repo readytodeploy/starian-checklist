@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 
 import { TodoService } from './todo.service';
 import { Todo } from '../models/todo.model';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 describe('TodoService', () => {
   let service: TodoService;

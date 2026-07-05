@@ -1,6 +1,6 @@
 # Todo App — Frontend
 
-> Refatorar o frontend Angular da Todo List de um *god component* (`any`, estilos inline, dados "fake", URL errada) para uma arquitetura moderna (serviço + componentes + signals), consumindo `/api/tarefas` e responsiva, **sem alterar a funcionalidade**. · Estado: em progresso (Fase 8) · Fecha: 2026-07-05 · Autor: Pedro Vargas
+> Refatorar o frontend Angular da Todo List de um *god component* (`any`, estilos inline, dados "fake", URL errada) para uma arquitetura moderna (serviço + componentes + signals), consumindo `/api/tarefas` e responsiva, **sem alterar a funcionalidade**. · Estado: em progresso (Fase 9) · Fecha: 2026-07-05 · Autor: Pedro Vargas
 > Referencias: spec/backend/tarefas-api.md · issue #—
 
 ## 0. Estado e avanço das fases
@@ -8,8 +8,8 @@
 | Fase | Escopo | Branch | Status |
 |------|--------|--------|--------|
 | 7 | Rede de segurança (test-first) + este spec | `fase_7_frontend_rede_de_seguranca` | ✅ concluída (mergeada em `development`) |
-| 8 | Modelo `Todo` + `TodoService` + `provideHttpClient` + environments (fix `/api`) | `fase_8_frontend_datos` | 🚧 em andamento |
-| 9 | Componentes (form/list/item) + signals + control flow moderno | `fase_9_frontend_componentes` | ⏳ pendente |
+| 8 | Modelo `Todo` + `TodoService` + `provideHttpClient` + environments (fix `/api`) | `fase_8_frontend_datos` | ✅ concluída (mergeada em `development`) |
+| 9 | Componentes (form/list/item) + signals + control flow moderno | `fase_9_frontend_componentes` | 🚧 em andamento |
 | 10 | Estilos responsivos + acessibilidade + ESLint | `fase_10_frontend_estilos` | ⏳ pendente |
 | 11 | Verificação final (ng test / ng lint / docker) | — | ⏳ pendente |
 

@@ -1,0 +1,6 @@
+<li class="todo-item">
+  <span [class.completed]="todo().completed">{{ todo().title }}</span>
+  <button type="button" [attr.aria-label]="'Remover ' + todo().title" (click)="remove.emit(todo().id)">
+    Remover
+  </button>
+</li>

@@ -9,11 +9,14 @@ import { AppComponent } from './app.component';
  * Rede de seguranca do fluxo da Todo.
  *
  * Grupo A (regressao): fixa o happy path que NAO deve mudar. Interage pelo
- * DOM/HTTP (agnostico a implementacao), entao sobrevive a extracao de componentes
- * (Fase 9). Desde a Fase 8 o contrato e /api/tarefas com envelope { data }.
+ * DOM/HTTP (agnostico a implementacao), entao sobreviveu a extracao de servico
+ * (Fase 8) e de componentes (Fase 9). Contrato: /api/tarefas com envelope { data }.
  *
- * Grupo B (alvo): comportamentos de erro que o codigo legado ainda NAO cumpre
- * (fallback fake e mutacao otimista). Ficam `pending()` ate a Fase 9.
+ * Grupo B: comportamentos de erro corrigidos na Fase 9 (sem fallback fake, sem
+ * mutacao otimista) — agora verdes.
+ *
+ * O fixture e anexado ao document porque o TodoForm usa <form> nativo: um form
+ * desconectado nao dispara o evento submit ao clicar o botao.
  */
 describe('AppComponent — rede de seguranca do fluxo', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -38,12 +41,16 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
     });
 
     fixture = TestBed.createComponent(AppComponent);
+    document.body.appendChild(fixture.nativeElement);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+    fixture.nativeElement.remove();
+  });
 
-  // ---------- Grupo A: regressao (verde) ----------
+  // ---------- Grupo A: regressao ----------
 
   it('lista e exibe as tarefas ao iniciar', () => {
     fixture.detectChanges(); // dispara a carga
@@ -117,23 +124,21 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
     expect(el().textContent).not.toContain('Temporária');
   });
 
-  // ---------- Grupo B: comportamento-alvo (habilitar na Fase 9) ----------
+  // ---------- Grupo B: comportamento corrigido na Fase 9 ----------
 
   it('erro ao listar mostra mensagem e NAO dados fake', () => {
-    pending('Alvo: remover o fallback fake e exibir erro na UI (Fase 9).');
-
     fixture.detectChanges();
     httpMock.expectOne(isTarefas).error(new ProgressEvent('error'));
     fixture.detectChanges();
 
+    expect(el().textContent).toContain('Não foi possível');
     expect(el().textContent).not.toContain('offline');
   });
 
   it('erro ao criar NAO adiciona tarefa fabricada', () => {
-    pending('Alvo: no POST com erro, mostrar erro em vez de inventar tarefa (Fase 9).');
-
     fixture.detectChanges();
     httpMock.expectOne(isTarefas).flush({ data: [] });
+
     type('Nova');
     button('Adicionar').click();
     httpMock.expectOne((r) => r.method === 'POST').error(new ProgressEvent('error'));
@@ -143,11 +148,10 @@ describe('AppComponent — rede de seguranca do fluxo', () => {
   });
 
   it('erro ao remover MANTÉM a tarefa (consistente com o servidor)', () => {
-    pending('Alvo: no DELETE com erro, não remover localmente (Fase 9).');
-
     fixture.detectChanges();
     httpMock.expectOne(isTarefas).flush({ data: [{ id: 1, title: 'Fica', completed: false }] });
     fixture.detectChanges();
+
     button('Remover').click();
     httpMock.expectOne((r) => r.method === 'DELETE').error(new ProgressEvent('error'));
     fixture.detectChanges();

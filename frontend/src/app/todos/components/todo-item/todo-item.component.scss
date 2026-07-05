@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid var(--border);
+
+  .completed {
+    text-decoration: line-through;
+  }
+
+  button {
+    padding: 5px 10px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--danger-hover);
+    }
+  }
+}

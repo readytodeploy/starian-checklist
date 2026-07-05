@@ -1,1 +1,19 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globais e design tokens (cores do design original) */
+
+:root {
+  --primary: #4caf50;
+  --primary-hover: #43a047;
+  --danger: #f44336;
+  --danger-hover: #e53935;
+  --border: #dddddd;
+  --muted: gray;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
