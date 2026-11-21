@@ -46,6 +46,8 @@ Documentação detalhada de cada parte:
 ## Como executar
 
 ### Opção A — Stack completo com Docker
+## Opção A — Stack completo com Docker
+# Opção A — Stack completo com Docker
 
 Um comando na raiz sobe backend + frontend (o entrypoint cuida de `.env`, banco,
 migrations e seed):
